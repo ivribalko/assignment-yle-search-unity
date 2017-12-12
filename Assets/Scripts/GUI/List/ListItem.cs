@@ -2,11 +2,6 @@
 
 namespace GUI.List
 {
-    public interface IListItemClickListener
-    {
-        void OnListItemClick(object data);
-    }
-
     public interface IListItem
     {
         void Set(object data);

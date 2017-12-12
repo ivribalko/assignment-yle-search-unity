@@ -3,6 +3,7 @@ using GUI.List;
 using UnityEngine;
 using UnityEngine.UI;
 using Yle;
+using System;
 
 namespace GUI.Search
 {
@@ -11,10 +12,7 @@ namespace GUI.Search
         #region - LifeCycle
         void Start()
         {
-            m_DetailsButton.onClick.AddListener(() => {
-                var listener = GetComponentInParent<IListItemClickListener>();
-                listener.OnListItemClick(m_ProgramID);
-            });
+            m_DetailsButton.onClick.AddListener(() => onClick(m_ProgramID));
         }
         #endregion
 
@@ -23,6 +21,10 @@ namespace GUI.Search
         [SerializeField] Text m_TitleText;
 
         string m_ProgramID;
+        #endregion
+
+        #region - Public
+        public Action<string> onClick;
         #endregion
 
         #region - Private

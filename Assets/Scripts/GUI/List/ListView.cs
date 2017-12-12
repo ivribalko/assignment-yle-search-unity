@@ -8,14 +8,13 @@ using UnityEngine.UI;
 
 namespace GUI.List
 {
-    public class ListView : MonoBehaviour
+    public class ListView<T> : MonoBehaviour where T : MonoBehaviour, IListItem
     {
         #region - LifeCycle
-        void Awake()
+        void Start()
         {
             m_ItemPrefab.gameObject.SetActive(false);
-            /// Avoid destroying
-            m_ItemPrefab.transform.SetParent(transform);
+            m_Pool = new Pool<T>(m_ItemPrefab as T);
         }
 
         void Update()
@@ -40,6 +39,7 @@ namespace GUI.List
         [SerializeField] MonoBehaviour m_ItemPrefab;
 
         IViewModel m_ViewModel;
+        Pool<T> m_Pool;
 
         bool m_ScrollBarOn;
         #endregion
@@ -70,24 +70,20 @@ namespace GUI.List
         {
             if (collection != null) {
                 foreach (var data in collection) {
-                    ShowItem(data);
+                    var newItem = m_Pool.Get();
+                    ShowItem(newItem, data);
                 }
             }
         }
 
         void Clear()
         {
-            m_LayoutGroup.transform.DestroyChildren();
+            m_Pool.Flush();
         }
 
-        void ShowItem(object data)
+        protected virtual void ShowItem(T item, object data)
         {
-            var newItem = Instantiate(m_ItemPrefab);
-            newItem.GetComponent<IListItem>().Set(data);
-            newItem.transform.SetParent(m_LayoutGroup.transform);
-            newItem.transform.localScale = m_ItemPrefab.transform.localScale;
-
-            newItem.gameObject.SetActive(true);
+            item.Set(data);
         }
         #endregion
     }

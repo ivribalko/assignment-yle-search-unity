@@ -23,23 +23,23 @@ namespace GUI.Search
         void ToggleActivityIndicator(bool show);
     }
 
-    public class SearchWindow : View, ISearchView, IListItemClickListener
+    public class SearchWindow : View, ISearchView
     {
         #region - LifeCycle
-        void Awake()
+        void Start()
         {
             m_ClearSearchButton.onClick.AddListener(() => m_SearchInputField.text = null);
 
-            m_SearchInputField.onEndEdit.AddListener(_ => OnSearch());
+            m_SearchList.onItemClick += OnDetails;
 
-            m_SearchInputField.shouldHideMobileInput = true;
+            m_SearchInputField.onEndEdit.AddListener(_ => OnSearch());
         }
         #endregion
 
         #region - State
         [SerializeField] Button m_ClearSearchButton;
         [SerializeField] InputField m_SearchInputField;
-        [SerializeField] ListView m_SearchList;
+        [SerializeField] SearchListView m_SearchList;
         [SerializeField] ActivityIndicator m_ActivityIndicator;
         #endregion
 
@@ -63,11 +63,6 @@ namespace GUI.Search
         public void ToggleActivityIndicator(bool show)
         {
             m_ActivityIndicator.gameObject.SetActive(show);
-        }
-
-        public void OnListItemClick(object data)
-        {
-            OnDetails((string)data);
         }
         #endregion
     }

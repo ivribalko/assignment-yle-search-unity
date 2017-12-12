@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Name: Settings
   m_EditorClassIdentifier: 
   Logging: 0
-  LimitRequestResults: 10
-  NetworkDelaySeconds: 0
+  LimitRequestResults: 100
+  NetworkDelaySeconds: 1
