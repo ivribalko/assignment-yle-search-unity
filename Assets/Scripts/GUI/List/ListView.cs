@@ -17,6 +17,21 @@ namespace GUI.List
             /// Avoid destroying
             m_ItemPrefab.transform.SetParent(transform);
         }
+
+        void Update()
+        {
+            // An ugly workaround for ScrollRect not properly resizing the viewport
+            // Am probably looking for a better solution
+            var scrollBarOn = m_ScrollRect.verticalScrollbar.gameObject.activeSelf;
+
+            if (m_ScrollBarOn != scrollBarOn) {
+                m_ScrollBarOn = scrollBarOn;
+
+                var viewportText = m_ScrollRect.viewport.GetComponent<Text>();
+                viewportText.enabled = false;
+                viewportText.enabled = true;
+            }
+        }
         #endregion
 
         #region - State
@@ -25,6 +40,8 @@ namespace GUI.List
         [SerializeField] MonoBehaviour m_ItemPrefab;
 
         IViewModel m_ViewModel;
+
+        bool m_ScrollBarOn;
         #endregion
 
         #region - Public
