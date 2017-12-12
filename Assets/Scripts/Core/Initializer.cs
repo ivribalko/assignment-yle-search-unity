@@ -1,36 +1,23 @@
-﻿using UnityEngine;
+﻿using GUI;
+using GUI.Search;
+using UnityEngine;
 using Yle;
-using Auxiliary;
 
 namespace Core
 {
-	//TODO diable logs
+    public class Initializer : MonoBehaviour
+    {
+        void Start()
+        {
+            IoCRegistrar.Run();
 
-	public class Initializer : MonoBehaviour
-	{
-		void Start()
-		{
-			IoCRegistrar.Run();
+            var guiManager = IoC.Get<IManager>();
+            var requestBuilder = IoC.Get<IRequestBuilder>();
 
-			var server = IoC.Get<IServer>();
-			var requestBuilder = IoC.Get<IRequestBuilder>();
+            requestBuilder.limitResults = Settings.instance.LimitRequestResults;
 
-			requestBuilder.LimitResults = 2;
-
-			server.FindProgramsByTitle("qwe", log);
-		}
-
-		void log(Answer answer)
-		{
-			if (answer == null) {
-				return;
-			}
-
-			if (answer.data != null) {
-				UnityEngine.Debug.LogError(answer.data[0].title.Localised());
-			}
-
-			UnityEngine.Debug.LogError(answer.meta.count);
-		}
-	}
+            var view = guiManager.OpenWindow<SearchWindow>();
+            new SearchPresenter(guiManager, requestBuilder, view, IoC.Get<ISearchModel>());
+        }
+    }
 }
