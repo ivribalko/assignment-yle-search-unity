@@ -31,19 +31,21 @@ namespace Auxiliary
                 result = m_Items[m_Current];
             }
 
-            result.gameObject.SetActive(true);
+            if (!result.gameObject.activeSelf) {
+                result.gameObject.SetActive(true);
+            }
 
             m_Current += 1;
 
             return result;
         }
 
-        public void Flush()
+        public void Flush(int leaveOnCount)
         {
             m_Current = 0;
 
-            foreach (var item in m_Items) {
-                item.gameObject.SetActive(false);
+            for (int i = m_Items.Count - 1; i > leaveOnCount - 1; i--) {
+                m_Items[i].gameObject.SetActive(false);
             }
         }
 

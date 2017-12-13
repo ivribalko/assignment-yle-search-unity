@@ -14,7 +14,7 @@ namespace GUI.Search
         /// Sends program ID
         event Action<string> OnDetails;
         /// The more -> the closer to start
-        event Action<float> onVerticalScrollChanged;
+        event Action onReachingEnd;
 
         string searchText { get; }
 
@@ -47,9 +47,9 @@ namespace GUI.Search
         public event Action OnSearch;
         public event Action<string> OnDetails;
 
-        public event Action<float> onVerticalScrollChanged {
-            add { m_SearchList.OnSrollEvent += position => value(position.y); }
-            remove { throw new NotSupportedException(); }
+        public event Action onReachingEnd {
+            add { m_SearchList.onReachingEnd += value; }
+            remove { m_SearchList.onReachingEnd -= value; }
         }
 
         public string searchText {

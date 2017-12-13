@@ -6,46 +6,45 @@ namespace GUI.List
 {
     public interface IViewModel
     {
-        event Action<IEnumerable> onAppended;
-        event Action onCleared;
+        event Action onChanged;
 
         int Count { get; }
+
+        object Get(int index);
     }
 
     public class ViewModel<T> : IViewModel
     {
         #region - State
-        List<T> m_Collection;
+        readonly List<T> m_Collection = new List<T>();
         #endregion
 
         #region - Public
-        public event Action<IEnumerable> onAppended;
-        public event Action onCleared;
+        public event Action onChanged;
 
-        public int Count { get { return m_Collection == null ? 0 : m_Collection.Count; } }
+        public int Count { get { return m_Collection.Count; } }
 
         public void Clear()
         {
-            m_Collection = null;
+            m_Collection.Clear();
 
-            if (onCleared != null) {
-                onCleared();
+            if (onChanged != null) {
+                onChanged();
             }
         }
 
         public void Append(IEnumerable<T> collection)
         {
-            if (collection != null) {
-                if (m_Collection == null) {
-                    m_Collection = new List<T>(collection);
-                } else {
-                    m_Collection.AddRange(collection);
-                }
-            }
+            m_Collection.AddRange(collection);
 
-            if (onAppended != null) {
-                onAppended(collection);
+            if (onChanged != null) {
+                onChanged();
             }
+        }
+
+        public object Get(int index)
+        {
+            return m_Collection[index];
         }
 
         public T Find(Predicate<T> match)

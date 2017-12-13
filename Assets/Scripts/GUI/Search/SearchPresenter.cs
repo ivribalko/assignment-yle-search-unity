@@ -8,11 +8,6 @@ namespace GUI.Search
 {
     public class SearchPresenter
     {
-        #region - Constant
-        //TODO calculate actual items appearing
-        const float ScrollEnd = 0.1f;
-        #endregion
-
         #region - LifeCycle
         public SearchPresenter(IManager m_Manager, IRequestBuilder m_RequestBuilder, ISearchView m_SearchView,
                                ISearchModel m_SearchModel)
@@ -26,7 +21,7 @@ namespace GUI.Search
 
             m_SearchView.OnSearch += StartSearch;
             m_SearchView.OnDetails += OnDetailsButton;
-            m_SearchView.onVerticalScrollChanged += OnVerticalScrollChanged;
+            m_SearchView.onReachingEnd += ContinueList;
             m_SearchView.searchViewModel = m_SearchViewModel;
         }
         #endregion
@@ -60,7 +55,6 @@ namespace GUI.Search
             get { return m_SegmentPending; }
             set {
                 m_SegmentPending = value;
-                m_LastSegment = false;
                 m_SearchView.ToggleActivityIndicator(value);
             }
         }
@@ -73,12 +67,17 @@ namespace GUI.Search
 
             m_SearchViewModel.Clear();
             m_CurrentSegment = -1;
+            m_LastSegment = false;
 
             ContinueList();
         }
 
         void ContinueList()
         {
+            if (m_LastSegment || segmentPending) {
+                return;
+            }
+
             var searchText = m_SearchView.searchText;
             if (string.IsNullOrEmpty(searchText)) {
                 return;
@@ -95,11 +94,12 @@ namespace GUI.Search
 
         void OnAnswer(Answer answer)
         {
+            var received = (currentSegment + 1) * m_RequestBuilder.limitResults;
+            m_LastSegment = answer.meta.count <= received;
+
             segmentPending = false;
 
             m_SearchViewModel.Append(answer.data);
-
-            m_LastSegment = answer.meta.count <= m_SearchViewModel.Count;
         }
 
         void OnDetailsButton(string id)
@@ -115,17 +115,6 @@ namespace GUI.Search
             m_DetailsView.Set(found);
             m_DetailsView.Show();
             m_SearchView.Hide();
-        }
-
-        void OnVerticalScrollChanged(float normalizedPosition)
-        {
-            if (m_LastSegment || segmentPending) {
-                return;
-            }
-
-            if (normalizedPosition < ScrollEnd) {
-                ContinueList();
-            }
         }
 
         void CreateDetailsView()
