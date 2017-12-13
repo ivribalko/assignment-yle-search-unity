@@ -13,7 +13,7 @@ namespace GUI.List
 
         Vector2 CanvasSize { get; }
 
-        void GetVisibleRange(float start, ref int firstIndex, ref int lastIndex);
+        void GetVisibleRange(float start, out int firstIndex, out int lastIndex);
 
         Vector2 GetItemPosition(int index);
 
@@ -37,6 +37,7 @@ namespace GUI.List
         {
             m_DataSource = dataSource;
             m_ItemTemplate = itemTemplate;
+            m_ItemTemplateCasted = (IListItem)itemTemplate;
             m_Settings = settings;
         }
         #endregion
@@ -44,6 +45,7 @@ namespace GUI.List
         #region - State
         readonly IViewModel m_DataSource;
         readonly MonoBehaviour m_ItemTemplate;
+        readonly IListItem m_ItemTemplateCasted;
         readonly Settings m_Settings;
 
         readonly List<float> m_ItemsPositions = new List<float>();
@@ -61,8 +63,10 @@ namespace GUI.List
             }
         }
 
-        public void GetVisibleRange(float start, ref int firstIndex, ref int lastIndex)
+        public void GetVisibleRange(float start, out int firstIndex, out int lastIndex)
         {
+            firstIndex = lastIndex = 0;
+
             var end = start + m_ViewportSize.y;
 
             var dataCount = m_DataSource.Count;
@@ -132,7 +136,7 @@ namespace GUI.List
         #region - Private
         float GetPreferredHeight(ILayoutElement itemLayoutElement, object data)
         {
-            (m_ItemTemplate as IListItem).Set(data); //TODO
+            m_ItemTemplateCasted.Set(data);
             itemLayoutElement.CalculateLayoutInputVertical();
 
             return itemLayoutElement.preferredHeight;

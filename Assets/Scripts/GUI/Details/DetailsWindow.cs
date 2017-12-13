@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Globalization;
-using System.Xml;
 
 using Auxiliary;
 using GUI;
@@ -48,8 +46,6 @@ namespace GUI.Details
         [SerializeField] Text m_CreatorText;
         [SerializeField] Text m_DescriptionText;
         [SerializeField] ScrollRect m_DescriptionScrollRect;
-
-        readonly CultureInfo m_FinnishCulture = new CultureInfo("fi-FI");
         #endregion
 
         #region - Public
@@ -65,11 +61,7 @@ namespace GUI.Details
 
             SetText(m_CountryText, "Country", data.countryOfOrigin);
 
-            var format = XmlDateTimeSerializationMode.Utc;
-            var date = XmlConvert.ToDateTime(data.indexDataModified, format)
-                .ToString("d", m_FinnishCulture);
-            
-            SetText(m_DataModifiedText, "Updated", date);
+            SetText(m_DataModifiedText, "Updated", data.indexDataModified);
 
             SetText(m_CreatorText, "Creator", data.creator, creator => creator.name);
 

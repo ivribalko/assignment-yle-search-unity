@@ -40,6 +40,7 @@ namespace Auxiliary
             return result;
         }
 
+        /// Disable unused, reset get counter.
         public void Flush(int leaveOnCount)
         {
             m_Current = 0;

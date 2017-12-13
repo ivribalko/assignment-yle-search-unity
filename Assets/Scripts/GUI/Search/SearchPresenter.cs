@@ -94,8 +94,8 @@ namespace GUI.Search
 
         void OnAnswer(Answer answer)
         {
-            var received = (currentSegment + 1) * m_RequestBuilder.limitResults;
-            m_LastSegment = answer.meta.count <= received;
+            var receivedCount = (currentSegment + 1) * m_RequestBuilder.limitResults;
+            m_LastSegment = answer.meta.count <= receivedCount;
 
             segmentPending = false;
 
@@ -112,6 +112,7 @@ namespace GUI.Search
 
             // We are not using standard gui manager behaviour
             // because the details window is very likely to be reopened
+            // probably later can do some window not closable by manager
             m_DetailsView.Set(found);
             m_DetailsView.Show();
             m_SearchView.Hide();

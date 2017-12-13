@@ -19,15 +19,6 @@ namespace GUI.List
 
         void Update()
         {
-            var scrollRectTransform = m_ScrollRect.transform as RectTransform;
-
-            //changed screen aspect or scroll bar activity
-            if (m_ScrollRectRect != scrollRectTransform.rect) { 
-                m_ScrollRectRect = scrollRectTransform.rect;
-                UpdateLayout();
-                UpdateItems(dataChanged: false);
-            }
-
             // An ugly workaround for ScrollRect not properly resizing the viewport
             // Am probably looking for a better solution
             var scrollBarOn = m_ScrollRect.verticalScrollbar.gameObject.activeSelf;
@@ -37,6 +28,16 @@ namespace GUI.List
                 var viewportText = m_ScrollRect.viewport.GetComponent<Text>();
                 viewportText.enabled = false;
                 viewportText.enabled = true;
+            }
+
+            var scrollRectTransform = m_ScrollRect.transform as RectTransform;
+            var scrollRectRect = scrollRectTransform.rect;
+
+            if (m_ScrollRectRect != scrollRectRect) { 
+                m_ScrollRectRect = scrollRectRect;
+
+                UpdateLayout(updateViewport: true);
+                UpdateItems(force: true);
             }
         }
         #endregion
@@ -75,50 +76,53 @@ namespace GUI.List
         #region - Private
         protected abstract IListViewLayout CreateLayout();
 
-        void OnDataChanged()
-        {
-            m_ListViewLayout.CalculateParameters();
-
-            UpdateItems(dataChanged: true);
-        }
-
         protected virtual void ShowItem(int index, T item, object data)
         {
             item.Set(data);
         }
 
-        void UpdateLayout()
+        void UpdateLayout(bool updateViewport)
         {
-            var scrollRectTransform = m_ScrollRect.transform as RectTransform;
-            m_ListViewLayout.ViewportSize = scrollRectTransform.rect.size;
+            if (updateViewport) {
+                var scrollRectTransform = m_ScrollRect.transform as RectTransform;
+                m_ListViewLayout.ViewportSize = scrollRectTransform.rect.size;
+            }
+
+            m_ListViewLayout.CalculateParameters();
+
+            var height = m_ListViewLayout.CanvasSize.y;
+
+            m_Content.sizeDelta = new Vector2(m_Content.sizeDelta.x, height);
         }
 
-        void UpdateItems(bool dataChanged)
+        void UpdateItems(bool force)
         {
-            int startVisibleIndex = 0;
-            int endVisibleIndex = 0;
+            int startVisibleIndex, endVisibleIndex;
 
             m_ListViewLayout.GetVisibleRange(
                 m_Content.offsetMax.y,
-                ref startVisibleIndex,
-                ref endVisibleIndex
+                out startVisibleIndex,
+                out endVisibleIndex
             );
 
-            if (!dataChanged &&
+            if (!force &&
                 startVisibleIndex == m_LastStartVisibleIndex &&
                 endVisibleIndex == m_LastEndVisibleIndex) {
                 return;
-            }
-
-            if (dataChanged) { //TODO but if m_ScrollRectRect != scrollRectTransform.rect
-                var height = m_ListViewLayout.CanvasSize.y;
-                m_Content.sizeDelta = new Vector2(m_Content.sizeDelta.x, height);
             }
 
             var leaveOnCount = Mathf.Max(0, endVisibleIndex - startVisibleIndex);
 
             m_Pool.Flush(leaveOnCount);
 
+            Populate(startVisibleIndex, endVisibleIndex);
+
+            m_LastStartVisibleIndex = startVisibleIndex;
+            m_LastEndVisibleIndex = endVisibleIndex;
+        }
+
+        void Populate(int startVisibleIndex, int endVisibleIndex)
+        {
             for (var i = startVisibleIndex; i <= endVisibleIndex; i += 1) {
                 var itemData = m_ViewModel.Get(i);
                 var item = m_Pool.Get();
@@ -129,14 +133,17 @@ namespace GUI.List
 
                 ShowItem(i, item, itemData);
             }
+        }
 
-            m_LastStartVisibleIndex = startVisibleIndex;
-            m_LastEndVisibleIndex = endVisibleIndex;
+        void OnDataChanged()
+        {
+            UpdateLayout(updateViewport: false);
+            UpdateItems(force: true);
         }
 
         void OnScrollChangeHandler(Vector2 scrollPosition)
         {
-            UpdateItems(dataChanged: false);
+            UpdateItems(force: false);
         }
         #endregion
     }
